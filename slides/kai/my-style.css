@@ -1,0 +1,59 @@
+/* Two column layout*/
+.grid {
+  margin-right: auto;
+  margin-left: auto;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-wrap: wrap;
+  flex-wrap: wrap;
+  clear: both;
+}
+.grid:before {
+  content: "";
+  display: table;
+}
+.grid:after {
+  clear: both;
+}
+.grid > .column {
+  position: relative;
+  width: 100%;
+  display: -webkit-flex;
+  display: flex;
+  flex: auto;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-transition: .3s;
+  transition: .3s;
+  padding: .3rem;
+}
+.grid.vertical-align .column {
+  justify-content: center;
+}
+/*@media (min-width:768px) {*/
+.grid > .column {
+  width: 25%;
+}
+/* Grid (Sidebar + Main) .grid.sm */
+.grid.sm .column:nth-child(1) {
+  width: 30%;
+}
+.grid.sm .column:nth-child(2) {
+  width: 70%;
+}
+/* Grid (Main + Sidebar) .grid.ms */
+.grid.ms .column:nth-child(1) {
+  width: 70%;
+}
+.grid.ms .column:nth-child(2) {
+  width: 30%;
+}
+/* Grid (Sidebar + Main + Sidebar) .grid.sms */
+.grid.sms .column:nth-child(2) {
+  width: 50%;
+}
+
+/*********************/
+/* Kai's overwriting */
+/*********************/
+.reveal pre code { max-height: 560px; }

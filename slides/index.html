@@ -1,0 +1,284 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>JuliaCon 2017 | Turing.jl</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Material design icons -->
+		<link rel="stylesheet" href="kai/icons.css">
+
+		<link rel="stylesheet" href="kai/my-style.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section data-markdown data-state="homepage">
+					<textarea data-template>
+						# Turing.jl
+
+						*A fresh approach to probabilistic programming in Julia*
+
+						<i class="material-icons">person</i> Kai Xu <i class="material-icons">schedule</i> 22 June 2017
+
+						<p><i class="material-icons">group</i> Hong Ge &amp;  Zoubin Ghahramani</p><!-- .element: class="fragment" -->
+
+						<p><i class="material-icons">school</i> Machine Learning Group, University of Cambridge</p><!-- .element: class="fragment" -->
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template>
+						## Outline
+
+						- What is probabilistic programming?
+						- Why Julia?
+						- Key features
+						<!-- - Comparisons against other frameworks -->
+						- How Turing.jl works?
+						- Live demo
+						- Q&A
+					</textarea>
+				</section>
+
+				<section>
+					<section data-markdown>
+						<textarea data-template>
+							### What is probabilistic programming?
+
+							- Probabilistic programming is general-purpose programming with intrinsic support of non-deterministic statements.
+							- Such programming languages are called probabilistic programming languages (PPLs).
+							- One of the main applications of PPLs is probabilistic modelling, a popular field of machine learning.
+						</textarea>
+					</section>
+					<section>
+						<div class="grid">
+							<div class="column">
+								<ul>
+								<li>Two types of PPLs</li>
+									<ul>
+										<li>Standalone:</li>
+										<ul>
+											<li>BUGS</li>
+											<li>Stan</li>
+										</ul>
+										<li>Embedded-in:</li>
+										<ul>
+											<li>Anglican in Clojure</li>
+											<li>WebPPL in JavaScript</li>
+											<li>Turing.jl in <i class="material-icons">star</i><b>Julia</b><i class="material-icons">star</i></li>
+										</ul>
+									</ul>
+								</ul>
+							</div>
+							<div class="column">
+								<pre class="julia"><code data-trim data-noescape julia>
+									using Turing
+
+									@model gdemo(x) = begin
+									  s ~ InverseGamma(2, 3)
+									  m ~ Normal(0, sqrt(s))
+									  x[1] ~ Normal(m, sqrt(s))
+									  x[2] ~ Normal(m, sqrt(s))
+									  s, m
+									end
+
+									modelf = gdemo([1.5, 2])
+									alg1 = PG(50, 1000)
+									chn1 = sample(modelf, alg)
+									alg2 = HMC(1000, 0.2, 3)
+									chn2 = sample(modelf, alg)
+								</code></pre>
+								<small>Code 1: Simple Turing.jl workflow</small>
+							</div>
+						</div>
+					</section>
+					<section>
+						<div class="grid">
+							<small>Looking closely, we can see the probablistic features we mentioned before in Turing.jl ...</small>
+							<div class="column">
+								<pre class="julia"><code data-trim data-noescape julia>
+									using Turing
+
+									@model gdemo(x) = begin
+									  s ~ InverseGamma(2, 3)
+									  m ~ Normal(0, sqrt(s))
+									  x[1] ~ Normal(m, sqrt(s))
+									  x[2] ~ Normal(m, sqrt(s))
+									  s, m
+									end
+
+									modelf = gdemo([1.5, 2])
+									alg1 = PG(50, 1000)
+									chn1 = sample(modelf, alg)
+									alg2 = HMC(1000, 0.2, 3)
+									chn2 = sample(modelf, alg)
+								</code></pre>
+								<small>Code 1: Simple Turing.jl workflow</small>
+							</div>
+							<div class="column">
+								<ul>
+									<li>Non-deterministic?</li>
+									<ul>
+										<li>Distributions</li>
+									</ul>
+									<li>Language?</li>
+									<ul>
+										<li><code>@model</code> macro</li>
+										<li><code>~</code> notaion</li>
+									</ul>
+									<li>Machine learning?</li>
+									<ul>
+										<li>Sampling methods</li>
+										<ul>
+											<li>SMC, PG, HMC, NUTS, Gibbs ...</li>
+										</ul>
+									</ul>
+								</ul>
+							</div>
+						</div>
+					</section>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template>
+						### Why Julia?
+
+						- Rich statistical libraries
+							- Distributions.jl has a rich distributions
+						- Meta-programming
+							- Turing's compiler, i.e. `@model` and `~`
+						- Coroutines
+							- Particle Gibbs (PG) implementation
+						- Automatic differentiation (AD)
+							- Hamiltonian Monte Carlo (HMC) implementation
+							- Generic typing help AD work with distributions
+					</textarea>
+				</section>
+
+				<section>
+					<section data-markdown>
+						<textarea data-template>
+							### Key features
+							- Universal probabilistic programming with an ituitive modelling interface embedded in friendly Julia
+							- PG sampler for distributions involving discrete variables and for stochastic control flows
+							- HMC sampler for differentiable distributions
+							- <i class="material-icons">new_releases</i> Compositional MCMC interface
+							- <i class="material-icons">new_releases</i> Resumption of MCMC chains
+							- <i class="material-icons">check_box_outline_blank</i> More novel samplers, other inference methods, sampling from user-defined models, ...
+						</textarea>
+					</section>
+					<section style="top:0px;padding:0px;">
+						<pre class="julia"><code data-trim data-noescape julia>
+							using Turing
+
+							@model gdemo(x, K) = begin
+							    m = Vector{Real}(K);
+							    for i = 1:K
+							        m[i] ~ Normal(0, 25)
+							    end
+							    s ~ InverseGamma(2, 3)
+							    N = length(x); z = tzeros(Int, N)
+							    for i = 1:N
+							        z[i] ~ Categorical(1/K*ones(K))
+							        x[i] ~ Normal(m[z[i]], sqrt(s))
+							    end
+							    z, s, m
+							end
+
+							modelf = gdemo([1.1, 1.0, 0.9, 2.1, 2.2], 2)
+							alg = <mark>Gibbs(1000, PG(50, 1, :z), HMC(1, 0.2, 3, :m, :s))</mark>
+							chn = sample(modelf, alg)
+						</code></pre>
+						<small>Code 2: Compositional MCMC interface</small>
+					</section>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template>
+						### How Turing.jl works?
+						To be finished.
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template>
+						# Live demo
+						Time to see a live Turing.jl program ...
+					</textarea>
+				</section>
+
+				<section data-markdown>
+					<textarea data-template>
+						# Q&A
+						Any question?
+					</textarea>
+				</section>
+
+				<!-- <section>
+					<div class="grid">
+						<div class="column">
+							left
+						</div>
+						<div class="column">
+							right
+						</div>
+					</div>
+				</section> -->
+
+				<!-- <section data-markdown>
+					<textarea data-template>
+					</textarea>
+				</section> -->
+
+				<section data-markdown>
+					<textarea data-template>
+						# Thank you for listening <i class="material-icons md-96">sentiment_very_satisfied</i>
+					</textarea>
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				math: { mathjax: 'kai/MathJax-2.7.1/MathJax.js', config: 'TeX-AMS_HTML-full' },
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/math/math.js', async: true }
+				]
+			});
+
+			// Redirect of homepage
+			Reveal.addEventListener( 'homepage', function() {
+				Reveal.slide( 5 );
+			}, false );
+
+			Reveal.configure({ slideNumber: 'c/t' });
+		</script>
+	</body>
+</html>
