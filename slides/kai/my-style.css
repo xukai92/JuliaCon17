@@ -56,4 +56,12 @@
 /*********************/
 /* Kai's overwriting */
 /*********************/
+
+/* Make code block higher */
 .reveal pre code { max-height: 560px; }
+
+/* Reszie font size */
+.resize-font-90 { font-size: 90% !important; }
+.resize-font-75 { font-size: 75% !important; }
+.resize-font-66 { font-size: 66% !important; }
+.resize-font-50 { font-size: 50% !important; }

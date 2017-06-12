@@ -15,6 +15,7 @@
 		<!-- Material design icons -->
 		<link rel="stylesheet" href="kai/icons.css">
 
+		<!-- Kai's customization -->
 		<link rel="stylesheet" href="kai/my-style.css">
 
 		<!-- Printing and PDF exports -->
@@ -37,7 +38,7 @@
 
 						<i class="material-icons">person</i> Kai Xu <i class="material-icons">schedule</i> 22 June 2017
 
-						<p><i class="material-icons">group</i> Hong Ge &amp;  Zoubin Ghahramani</p><!-- .element: class="fragment" -->
+						<p><i class="material-icons">group</i> Hong Ge &amp; Zoubin Ghahramani</p><!-- .element: class="fragment" -->
 
 						<p><i class="material-icons">school</i> Machine Learning Group, University of Cambridge</p><!-- .element: class="fragment" -->
 					</textarea>
@@ -80,8 +81,9 @@
 										</ul>
 										<li>Embedded-in:</li>
 										<ul>
+											<li>Probabilistic C in C</li>
 											<li>Anglican in Clojure</li>
-											<li>WebPPL in JavaScript</li>
+											<li>WebPPL in JS</li>
 											<li>Turing.jl in <i class="material-icons">star</i><b>Julia</b><i class="material-icons">star</i></li>
 										</ul>
 									</ul>
@@ -182,9 +184,11 @@
 							- <i class="material-icons">new_releases</i> Compositional MCMC interface
 							- <i class="material-icons">new_releases</i> Resumption of MCMC chains
 							- <i class="material-icons">check_box_outline_blank</i> More novel samplers, other inference methods, sampling from user-defined models, ...
+
+							<small><i class="material-icons">new_releases</i> = new releases, <i class="material-icons">check_box_outline_blank</i> = next steps</small>
 						</textarea>
 					</section>
-					<section style="top:0px;padding:0px;">
+					<section>
 						<pre class="julia"><code data-trim data-noescape julia>
 							using Turing
 
@@ -208,13 +212,123 @@
 						</code></pre>
 						<small>Code 2: Compositional MCMC interface</small>
 					</section>
+					<section>
+						<pre class="julia"><code data-trim data-noescape julia>
+							using Turing
+
+							@model gdemo(...) = begin
+							  ...
+							end
+
+							modelf = gdemo(...)
+							<mark>chn1 = sample(modelf, HMC(1000, 1, 0.2, 3; save_state=true))</mark>
+							<mark>chn2 = sample(modelf, NUTS(1000, 0.65; resume_from=chn1))</mark>
+						</code></pre>
+						<small>Code 3: Resumption of MCMC chains</small>
+					</section>
 				</section>
 
-				<section data-markdown>
-					<textarea data-template>
-						### How Turing.jl works?
-						To be finished.
-					</textarea>
+				<section>
+					<section>
+						<h3>How Turing.jl works?</h3>
+						<div class="grid">
+							<div class="column resize-font-75">
+								<b><u>Key ML techniques</u></b>
+								<ul>
+									<li>Bayesian inference</li>
+									<ul>
+										<li>General framework for probabilistic modelling</li>
+									</ul>
+									<li>Sampling</li>
+									<ul>
+										<li>Particle filtering</li>
+										<li>Markov chain Monte Carlo</li>
+									</ul>
+								</ul>
+								<br>
+								<b><u>Key Julia techniques</u></b>
+								<ul>
+									<li>Coroutines</li>
+									<ul>
+										<li>Particle based samplers</li>
+									</ul>
+									<li>Automatic differentiation</li>
+									<ul>
+										<li>Hamiltonian based samplers</li>
+									</ul>
+								</ul>
+							</div>
+							<div class="column resize-font-75">
+								<b><u>Key system components</u></b>
+								<ul>
+									<li>Model <i>defined by</i> users</li>
+									<ul>
+										<li>Normal Julia program with modelling operations</li>
+									</ul>
+									<li>Sampler <i>specified by</i> users</li>
+									<ul>
+										<li>Need to interact with model</li>
+									</ul>
+									<li><code>VarInfo</code></li>
+									<ul>
+										<li>Key data structure</li>
+										<li>Enable interactions between models and samplers</li>
+										<li>Users don't see it</li>
+									</ul>
+									<li>Samples <i>returned to</i> users</li>
+									<ul>
+										<li>Embedded in <code>Chain</code> type</li>
+									</ul>
+								</ul>
+							</div>
+
+						</div>
+					</section>
+
+					<section data-background-color="#34495e">
+						<!--
+						Title: Workflow of Turing.jl: generating one sample
+						participant Model
+						participant VarInfo
+						participant Sampler(s)
+						participant Sample
+
+						Note over Sampler(s): Require evaluating model
+						Sampler(s)->VarInfo: +Embed info
+						VarInfo->Model: Apply & run
+						Note over Model: Evaluating
+						Model->VarInfo: Executed & return
+						VarInfo->Sampler(s): -Fetch result
+						Note over Sampler(s): Get an evaluation of model
+						Sampler(s)->VarInfo: Require output
+						VarInfo->Sample: All info converted
+						-->
+						<img src="kai/diagram.svg"></img>
+						<small>Figure 1: Workflow of Turing.jl: generating one sample</small>
+					</section>
+
+					<section data-markdown>
+						<textarea data-template>
+							### How Turing.jl uses coroutines
+							- IS, SMC and PG represent each particle running in parallel using a coroutine
+							- Each particle is essentially a copy of the model, i.e. a block of normal Julia code
+							- Duplicating or killing a particle is cheap
+							- Continuation and pausing of coroutine is frequently used because SMC and PG do model evaluation sequentially for each observation
+							- Lead to state-of-the-art SMC and PG performance
+						</textarea>
+					</section>
+
+					<section data-markdown>
+						<textarea data-template>
+							### How AD works in Turing.jl
+							1. Amend variables that need gradient information into `Dual` numbers
+							2. Set dual parts to `1` for each dimension
+							3. Update variables in `VarInfo`
+							4. Do model evalutation
+							5. Fetch gradient information from returns
+							  - Returned log-likelihood is in `Dual` type with gradient as its dual parts
+						</textarea>
+					</section>
 				</section>
 
 				<section data-markdown>
@@ -230,6 +344,8 @@
 						Any question?
 					</textarea>
 				</section>
+
+
 
 				<!-- <section>
 					<div class="grid">
@@ -275,7 +391,7 @@
 
 			// Redirect of homepage
 			Reveal.addEventListener( 'homepage', function() {
-				Reveal.slide( 5 );
+				// Reveal.slide( 4 );
 			}, false );
 
 			Reveal.configure({ slideNumber: 'c/t' });
