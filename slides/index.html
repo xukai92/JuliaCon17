@@ -38,9 +38,9 @@
 
 						<i class="material-icons">person</i> Kai Xu <i class="material-icons">schedule</i> 22 June 2017
 
-						<p><i class="material-icons">group</i> Hong Ge &amp; Zoubin Ghahramani</p><!-- .element: class="fragment" -->
+						<p><i class="material-icons">group</i> Hong Ge &amp; Zoubin Ghahramani</p>
 
-						<p><i class="material-icons">school</i> Machine Learning Group, University of Cambridge</p><!-- .element: class="fragment" -->
+						<p><i class="material-icons">school</i> Machine Learning Group, University of Cambridge</p>
 
 						Note:
 						This will only display in the notes window.
@@ -169,13 +169,14 @@
 						### Why Julia?
 
 						- Rich statistical libraries
-							- Distributions.jl has a rich distributions
+							- Distributions.jl covers common distributions
 						- Meta-programming
 							- Turing's compiler, i.e. `@model` and `~`
 						- Coroutines
-							- Particle Gibbs (PG) implementation
+							- Particle Gibbs implementation
 						- Automatic differentiation (AD)
-							- Hamiltonian Monte Carlo (HMC) implementation
+							- ForwardDiff.jl provides an easy-to-use `Dual` type
+							- Hamiltonian Monte Carlo implementation
 							- Generic typing help AD work with distributions
 					</textarea>
 				</section>
@@ -184,9 +185,9 @@
 					<section data-markdown>
 						<textarea data-template>
 							### Key features
-							- Universal probabilistic programming with an ituitive modelling interface embedded in friendly Julia
-							- PG sampler for distributions involving discrete variables and for stochastic control flows
-							- HMC sampler for differentiable distributions
+							- Universal probabilistic programming with an ituitive modelling interface embedded in Julia
+							- Support models involving discrete variables and for stochastic control flows
+							- HMC sampling for differentiable distributions
 							- <i class="material-icons">new_releases</i> Compositional MCMC interface
 							- <i class="material-icons">new_releases</i> Resumption of MCMC chains
 							- <i class="material-icons">check_box_outline_blank</i> More novel samplers, other inference methods, sampling from user-defined models, ...
@@ -198,7 +199,7 @@
 						<pre class="julia"><code data-trim data-noescape julia>
 							using Turing
 
-							@model gdemo(x, K) = begin
+							@model MoG(x, K) = begin
 							    m = Vector{Real}(K);
 							    for i = 1:K
 							        m[i] ~ Normal(0, 25)
@@ -212,7 +213,7 @@
 							    z, s, m
 							end
 
-							modelf = gdemo([1.1, 1.0, 0.9, 2.1, 2.2], 2)
+							modelf = MoG([1.1, 1.0, 0.9, 2.1, 2.2], 2)
 							alg = <mark>Gibbs(1000, PG(50, 1, :z), HMC(1, 0.2, 3, :m, :s))</mark>
 							chn = sample(modelf, alg)
 						</code></pre>
@@ -222,11 +223,11 @@
 						<pre class="julia"><code data-trim data-noescape julia>
 							using Turing
 
-							@model gdemo(...) = begin
+							@model somemodel(...) = begin
 							  ...
 							end
 
-							modelf = gdemo(...)
+							modelf = somemodel(...)
 							<mark>chn1 = sample(modelf, HMC(1000, 1, 0.2, 3; save_state=true))</mark>
 							<mark>chn2 = sample(modelf, NUTS(1000, 0.65; resume_from=chn1))</mark>
 						</code></pre>
@@ -236,7 +237,7 @@
 
 				<section>
 					<section>
-						<h3>How Turing.jl works?</h3>
+						<h4>How Turing.jl works?</h4>
 						<div class="grid">
 							<div class="column resize-font-75">
 								<b><u>Key ML techniques</u></b>
@@ -260,7 +261,7 @@
 									</ul>
 									<li>Automatic differentiation</li>
 									<ul>
-										<li>Hamiltonian based samplers</li>
+										<li>Gradient based samplers</li>
 									</ul>
 								</ul>
 							</div>
@@ -291,7 +292,7 @@
 						</div>
 					</section>
 
-					<section data-background-color="#34495e">
+					<section data-background-color="#ecf0f1">
 						<!--
 						Title: Workflow of Turing.jl: generating one sample
 						participant Model
@@ -315,9 +316,9 @@
 
 					<section data-markdown>
 						<textarea data-template>
-							### How Turing.jl uses coroutines
+							#### How particle filtering works in Turing.jl
 							- IS, SMC and PG represent each particle running in parallel using a coroutine
-							- Each particle is essentially a copy of the model, i.e. a block of normal Julia code
+							- Each particle is a "live" copy of the model, i.e. an ongoing execution of the model
 							- Duplicating or killing a particle is cheap
 							- Continuation and pausing of coroutine is frequently used because SMC and PG do model evaluation sequentially for each observation
 							- Lead to state-of-the-art SMC and PG performance
@@ -326,7 +327,7 @@
 
 					<section data-markdown>
 						<textarea data-template>
-							### How AD works in Turing.jl
+							#### How HMC works in Turing.jl
 							1. Amend variables that need gradient information into `Dual` numbers
 							2. Set dual parts to `1` for each dimension
 							3. Update variables in `VarInfo`
@@ -397,7 +398,7 @@
 
 			// Redirect of homepage
 			Reveal.addEventListener( 'homepage', function() {
-				// Reveal.slide( 4 );
+				 Reveal.slide( 5 );
 			}, false );
 
 			Reveal.configure({ slideNumber: 'c/t' });
