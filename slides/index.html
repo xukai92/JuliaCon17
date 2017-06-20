@@ -36,14 +36,18 @@
 
 						*A fresh approach to probabilistic programming in Julia*
 
-						<i class="material-icons">person</i> Kai Xu <i class="material-icons">schedule</i> 22 June 2017
+						<i class="material-icons">person</i> Kai Xu <i class="material-icons">event</i> JuliaCon, 22 June 2017
 
-						<p><i class="material-icons">group</i> Hong Ge &amp; Zoubin Ghahramani</p>
+						<i class="material-icons">group</i> Hong Ge &amp; Zoubin Ghahramani
 
-						<p><i class="material-icons">school</i> Machine Learning Group, University of Cambridge</p>
+						<i class="material-icons">school</i> Machine Learning Group, University of Cambridge
 
 						Note:
-						This will only display in the notes window.
+						Hello everyone my name is Kai Xu. I'm from the Machine Learning Group of University of Cambridge.
+						I'm here to give a talk to introduce the project I'm currently working on, which is call Turing.jl.
+						It's a probablistic programming framework purely written in Julia.
+						We currently have two main developers for the project, Hong Ge and myself, and we are both supervisoed by Prof. Zoubin Gharamani.
+						All right, let's start.
 					</textarea>
 				</section>
 
@@ -86,6 +90,7 @@
 										<ul>
 											<li>Probabilistic C in C</li>
 											<li>Anglican in Clojure</li>
+											<li>Edward in Python</li>
 											<li>WebPPL in JS</li>
 											<li>Turing.jl in <i class="material-icons">star</i><b>Julia</b><i class="material-icons">star</i></li>
 										</ul>
@@ -93,24 +98,28 @@
 								</ul>
 							</div>
 							<div class="column">
+								<p class="resize-font-66">
+									$$
+										\sigma^2 \sim \textit{Inv-Gamma}(2, 3),\\
+										\mu \sim \textit{Normal}(0, \sqrt{\sigma^2}), \\
+										x \sim \textit{Normal}(\mu, \sqrt{\sigma^2})
+									$$
+								</p>
 								<pre class="julia"><code data-trim data-noescape julia>
 									using Turing
 
 									@model gdemo(x) = begin
-									  s ~ InverseGamma(2, 3)
-									  m ~ Normal(0, sqrt(s))
-									  x[1] ~ Normal(m, sqrt(s))
-									  x[2] ~ Normal(m, sqrt(s))
-									  s, m
+									  σ² ~ InverseGamma(2, 3)
+									  μ  ~ Normal(0, sqrt(σ²))
+									  x[1] ~ Normal(μ, sqrt(σ²))
+									  x[2] ~ Normal(μ, sqrt(σ²))
+									  σ², μ
 									end
 
-									modelf = gdemo([1.5, 2])
-									alg1 = PG(50, 1000)
-									chn1 = sample(modelf, alg)
-									alg2 = HMC(1000, 0.2, 3)
-									chn2 = sample(modelf, alg)
+									chn = sample(gdemo([1.5, 2]),
+									             PG(50, 1000))
 								</code></pre>
-								<small>Code 1: Simple Turing.jl workflow</small>
+								<small>Code 1: Gaussian with conjugate priors</small>
 							</div>
 						</div>
 						<aside class="notes">
@@ -125,11 +134,11 @@
 									using Turing
 
 									@model gdemo(x) = begin
-									  s ~ InverseGamma(2, 3)
-									  m ~ Normal(0, sqrt(s))
-									  x[1] ~ Normal(m, sqrt(s))
-									  x[2] ~ Normal(m, sqrt(s))
-									  s, m
+									  σ² ~ InverseGamma(2, 3)
+									  μ  ~ Normal(0, sqrt(σ²))
+									  x[1] ~ Normal(μ, sqrt(σ²))
+									  x[2] ~ Normal(μ, sqrt(σ²))
+									  σ², μ
 									end
 
 									modelf = gdemo([1.5, 2])
@@ -138,7 +147,7 @@
 									alg2 = HMC(1000, 0.2, 3)
 									chn2 = sample(modelf, alg)
 								</code></pre>
-								<small>Code 1: Simple Turing.jl workflow</small>
+								<small>Code 2: Gaussian with conjugate priors (step-by-step)</small>
 							</div>
 							<div class="column">
 								<ul>
@@ -149,14 +158,11 @@
 									<li>Language?</li>
 									<ul>
 										<li><code>@model</code> macro</li>
-										<li><code>~</code> notaion</li>
+										<li><code>~</code> notaion (macro)</li>
 									</ul>
 									<li>Machine learning?</li>
 									<ul>
-										<li>Sampling methods</li>
-										<ul>
-											<li>SMC, PG, HMC, NUTS, Gibbs ...</li>
-										</ul>
+										<li>Bayesian inference by sampling: SMC, PG, HMC, NUTS, Gibbs ...</li>
 									</ul>
 								</ul>
 							</div>
@@ -186,8 +192,8 @@
 						<textarea data-template>
 							### Key features
 							- Universal probabilistic programming with an ituitive modelling interface embedded in Julia
-							- Support models involving discrete variables and for stochastic control flows
-							- HMC sampling for differentiable distributions
+							- Support of models with discrete variables and stochastic control flows
+							- HMC sampler for differentiable distributions
 							- <i class="material-icons">new_releases</i> Compositional MCMC interface
 							- <i class="material-icons">new_releases</i> Resumption of MCMC chains
 							- <i class="material-icons">check_box_outline_blank</i> More novel samplers, other inference methods, sampling from user-defined models, ...
@@ -217,7 +223,7 @@
 							alg = <mark>Gibbs(1000, PG(50, 1, :z), HMC(1, 0.2, 3, :m, :s))</mark>
 							chn = sample(modelf, alg)
 						</code></pre>
-						<small>Code 2: Compositional MCMC interface</small>
+						<small>Code 3: Compositional MCMC interface</small>
 					</section>
 					<section>
 						<pre class="julia"><code data-trim data-noescape julia>
@@ -328,12 +334,12 @@
 					<section data-markdown>
 						<textarea data-template>
 							#### How HMC works in Turing.jl
-							1. Amend variables that need gradient information into `Dual` numbers
-							2. Set dual parts to `1` for each dimension
-							3. Update variables in `VarInfo`
-							4. Do model evalutation
-							5. Fetch gradient information from returns
-							  - Returned log-likelihood is in `Dual` type with gradient as its dual parts
+							1. What HMC algorithm needs are model evalutions and the gradient of variables
+							2. Running the model program with variables set as `ForwardDiff.Dual` gives both
+							  - Unormalized posterior = real part of log-joint
+							  - Gradient of variables = dual parts of log-joint
+							3. Produce a sample candidate by simulating Hamiltonian dynamics with the leapfrog algorithm
+							4. Accept or reject the sample candidate
 						</textarea>
 					</section>
 				</section>
@@ -398,7 +404,7 @@
 
 			// Redirect of homepage
 			Reveal.addEventListener( 'homepage', function() {
-				 Reveal.slide( 5 );
+//				 Reveal.slide( 5 );
 			}, false );
 
 			Reveal.configure({ slideNumber: 'c/t' });
