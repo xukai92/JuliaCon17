@@ -65,3 +65,7 @@
 .resize-font-75 { font-size: 75% !important; }
 .resize-font-66 { font-size: 66% !important; }
 .resize-font-50 { font-size: 50% !important; }
+
+/* Alignment */
+.align-right { text-align: right !important; }
+.align-left  { text-align: left !important;  }

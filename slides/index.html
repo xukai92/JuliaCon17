@@ -42,9 +42,11 @@
 
 						<i class="material-icons">school</i> Machine Learning Group, University of Cambridge
 
+						*<p class="resize-font-66 align-right">https://github.com/yebai/Turing.jl</p>*
+
 						Note:
 						Hello everyone my name is Kai Xu. I'm from the Machine Learning Group of University of Cambridge.
-						I'm here to give a talk to introduce the project I'm currently working on, which is call Turing.jl.
+						Today I'm here to give a talk to introduce a project I'm currently working on, which is call Turing.jl.
 						It's a probablistic programming framework purely written in Julia.
 						We currently have two main developers for the project, Hong Ge and myself, and we are both supervisoed by Prof. Zoubin Gharamani.
 						All right, let's start.
@@ -98,16 +100,14 @@
 								</ul>
 							</div>
 							<div class="column">
-								<p class="resize-font-66">
+								<p>
 									$$
-										\sigma^2 \sim \textit{Inv-Gamma}(2, 3),\\
-										\mu \sim \textit{Normal}(0, \sqrt{\sigma^2}), \\
-										x \sim \textit{Normal}(\mu, \sqrt{\sigma^2})
+										\sigma^2 \sim \textit{Inv-Gamma}(2, 3) \\
+										\mu \sim \textit{Normal}(0, \sigma) \\
+										x \sim \textit{Normal}(\mu, \sigma)
 									$$
 								</p>
 								<pre class="julia"><code data-trim data-noescape julia>
-									using Turing
-
 									@model gdemo(x) = begin
 									  σ² ~ InverseGamma(2, 3)
 									  μ  ~ Normal(0, sqrt(σ²))
@@ -115,11 +115,8 @@
 									  x[2] ~ Normal(μ, sqrt(σ²))
 									  σ², μ
 									end
-
-									chn = sample(gdemo([1.5, 2]),
-									             PG(50, 1000))
 								</code></pre>
-								<small>Code 1: Gaussian with conjugate priors</small>
+								<small>Code 1: Gaussian model with conjugate priors</small>
 							</div>
 						</div>
 						<aside class="notes">
@@ -147,7 +144,7 @@
 									alg2 = HMC(1000, 0.2, 3)
 									chn2 = sample(modelf, alg)
 								</code></pre>
-								<small>Code 2: Gaussian with conjugate priors (step-by-step)</small>
+								<small>Code 2: Gaussian model with conjugate priors (inference step breakdown)</small>
 							</div>
 							<div class="column">
 								<ul>
@@ -174,8 +171,9 @@
 					<textarea data-template>
 						### Why Julia?
 
-						- Rich statistical libraries
+						- Rich collections of statistical libraries
 							- Distributions.jl covers common distributions
+							- Mamba.jl has good utility functions to compute statistics of MCMC chains
 						- Meta-programming
 							- Turing's compiler, i.e. `@model` and `~`
 						- Coroutines
@@ -202,25 +200,30 @@
 						</textarea>
 					</section>
 					<section>
+						<small>
+							$$ \mu_k \sim \textit{Normal(0, 25)}, \sigma_k^2 \sim \textit{Inv-Gamma}(2, 3) $$
+							$$ z_i \sim \textit{Cat}(1/K), x_i \sim \textit{Normal}(\mu_{z_i}, \sigma_{z_i}) $$
+						</small>
 						<pre class="julia"><code data-trim data-noescape julia>
 							using Turing
 
 							@model MoG(x, K) = begin
-							    m = Vector{Real}(K);
+							    μ = Vector{Real}(K)
+							    σ² = Vector{Real}(K)
 							    for i = 1:K
-							        m[i] ~ Normal(0, 25)
+							        μ[i] ~ Normal(0, 25)
+							        σ²[i] ~ InverseGamma(2, 3)
 							    end
-							    s ~ InverseGamma(2, 3)
 							    N = length(x); z = tzeros(Int, N)
 							    for i = 1:N
 							        z[i] ~ Categorical(1/K*ones(K))
-							        x[i] ~ Normal(m[z[i]], sqrt(s))
+							        x[i] ~ Normal(μ[z[i]], sqrt(σ²[z[i]]))
 							    end
-							    z, s, m
+							    z, σ², μ
 							end
 
 							modelf = MoG([1.1, 1.0, 0.9, 2.1, 2.2], 2)
-							alg = <mark>Gibbs(1000, PG(50, 1, :z), HMC(1, 0.2, 3, :m, :s))</mark>
+							alg = <mark>Gibbs(1000, PG(50, 1, :z), HMC(1, 0.2, 3, :μ, :σ²))</mark>
 							chn = sample(modelf, alg)
 						</code></pre>
 						<small>Code 3: Compositional MCMC interface</small>
@@ -334,8 +337,8 @@
 					<section data-markdown>
 						<textarea data-template>
 							#### How HMC works in Turing.jl
-							1. What HMC algorithm needs are model evalutions and the gradient of variables
-							2. Running the model program with variables set as `ForwardDiff.Dual` gives both
+							1. HMC algorithm needs the unormalized posterior of the model and the gradient of variables
+							2. Execution of the model program with variables set as `ForwardDiff.Dual` gives both
 							  - Unormalized posterior = real part of log-joint
 							  - Gradient of variables = dual parts of log-joint
 							3. Produce a sample candidate by simulating Hamiltonian dynamics with the leapfrog algorithm
