@@ -189,7 +189,7 @@
 						<textarea data-template>
 							### Key features
 							- Universal probabilistic programming with an ituitive modelling interface embedded in Julia
-							- Support of models with discrete variables and stochastic control flows
+							- Support of models with discrete variables and stochastic control flows by particle filtering
 							- HMC sampler for differentiable distributions
 							- <i class="material-icons">new_releases</i> Compositional MCMC interface
 							- <i class="material-icons">new_releases</i> Resumption of MCMC chains
@@ -327,9 +327,9 @@
 							#### How particle filtering works in Turing.jl
 							- IS, SMC and PG represent each particle running in parallel using a coroutine
 							- Each particle is a "live" copy of the model, i.e. an ongoing execution of the model
-							- Samplers need to duplicate or kill particles
-							- SMC and PG do model evaluation sequentially for each observation
-							  - Resuming and pausing a particle is necessary
+								- Samplers need to duplicate or kill particles
+								- SMC and PG do model evaluation sequentially for each observation
+							  	- Resuming and pausing a particle is necessary
 							- Lead to state-of-the-art SMC and PG performance
 						</textarea>
 					</section>
