@@ -33,6 +33,8 @@
 				<section data-state="homepage" data-markdown data-separator="^\n\n\n" data-separator-vertical="^\n\n" data-separator-notes="^Note:">>
 					<textarea data-template>
 						# Turing.jl
+						
+						<p class="resize-font-66 align-right">*https://github.com/yebai/Turing.jl*</p>
 
 						*A fresh approach to probabilistic programming in Julia*
 
@@ -41,8 +43,6 @@
 						<i class="material-icons">group</i> Hong Ge &amp; Zoubin Ghahramani
 
 						<i class="material-icons">school</i> Machine Learning Group, University of Cambridge
-
-						*<p class="resize-font-66 align-right">https://github.com/yebai/Turing.jl</p>*
 
 						Note:
 						Hello everyone my name is Kai Xu. I'm from the Machine Learning Group of University of Cambridge.
@@ -62,7 +62,7 @@
 						- Key features
 						<!-- - Comparisons against other frameworks -->
 						- How Turing.jl works?
-						- Live demo
+						- Live demo(s)
 						- Q&A
 					</textarea>
 				</section>
@@ -94,7 +94,7 @@
 											<li>Anglican in Clojure</li>
 											<li>Edward in Python</li>
 											<li>WebPPL in JS</li>
-											<li>Turing.jl in <i class="material-icons">star</i><b>Julia</b><i class="material-icons">star</i></li>
+											<li>Turing.jl in <i class="material-icons">star</i>Julia<i class="material-icons">star</i></li>
 										</ul>
 									</ul>
 								</ul>
@@ -104,7 +104,7 @@
 									$$
 										\sigma^2 \sim \textit{Inv-Gamma}(2, 3) \\
 										\mu \sim \textit{Normal}(0, \sigma) \\
-										x \sim \textit{Normal}(\mu, \sigma)
+										x_1, x_2 \sim \textit{Normal}(\mu, \sigma)
 									$$
 								</p>
 								<pre class="julia"><code data-trim data-noescape julia>
@@ -144,7 +144,7 @@
 									alg2 = HMC(1000, 0.2, 3)
 									chn2 = sample(modelf, alg)
 								</code></pre>
-								<small>Code 2: Gaussian model with conjugate priors (inference step breakdown)</small>
+								<small>Code 2: Gaussian model with conjugate priors (inference steps breakdown)</small>
 							</div>
 							<div class="column">
 								<ul>
@@ -159,7 +159,7 @@
 									</ul>
 									<li>Machine learning?</li>
 									<ul>
-										<li>Bayesian inference by sampling: SMC, PG, HMC, NUTS, Gibbs ...</li>
+										<li><i>Bayesian inference</i> by sampling: SMC, PG, HMC, NUTS, Gibbs ...</li>
 									</ul>
 								</ul>
 							</div>
@@ -172,10 +172,9 @@
 						### Why Julia?
 
 						- Rich collections of statistical libraries
-							- Distributions.jl covers common distributions
-							- Mamba.jl has good utility functions to compute statistics of MCMC chains
+							- StatsFuns.jl, Distributions.jl, Mamba.jl
 						- Meta-programming
-							- Turing's compiler, i.e. `@model` and `~`
+							- Turing's compiler, i.e. `@model` and `@~`
 						- Coroutines
 							- Particle Gibbs implementation
 						- Automatic differentiation (AD)
@@ -201,8 +200,8 @@
 					</section>
 					<section>
 						<small>
-							$$ \mu_k \sim \textit{Normal(0, 25)}, \sigma_k^2 \sim \textit{Inv-Gamma}(2, 3) $$
-							$$ z_i \sim \textit{Cat}(1/K), x_i \sim \textit{Normal}(\mu_{z_i}, \sigma_{z_i}) $$
+							$$ \mu_k \sim \textit{Normal(0, 25)}, \sigma_k^2 \sim \textit{Inv-Gamma}(2, 3), k = 1 \dots K $$
+							$$ z_i \sim \textit{Cat}(1/K), x_i \sim \textit{Normal}(\mu_{z_i}, \sigma_{z_i}), i = 1 \dots N $$
 						</small>
 						<pre class="julia"><code data-trim data-noescape julia>
 							using Turing
@@ -328,8 +327,9 @@
 							#### How particle filtering works in Turing.jl
 							- IS, SMC and PG represent each particle running in parallel using a coroutine
 							- Each particle is a "live" copy of the model, i.e. an ongoing execution of the model
-							- Duplicating or killing a particle is cheap
-							- Continuation and pausing of coroutine is frequently used because SMC and PG do model evaluation sequentially for each observation
+							- Samplers need to duplicate or kill particles
+							- SMC and PG do model evaluation sequentially for each observation
+							  - Resuming and pausing a particle is necessary
 							- Lead to state-of-the-art SMC and PG performance
 						</textarea>
 					</section>
